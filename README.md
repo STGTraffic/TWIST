@@ -1,5 +1,5 @@
-# HSTGNN
-This is the pytorch implementation of HSTGNN. 
+# TWIST
+This is the pytorch implementation of TWIST. 
 
 This paper has been accepted by [IEEE internet of things journal 2025.](https://doi.org/10.1016/j.inffus.2025.102978)
 

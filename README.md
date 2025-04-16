@@ -5,8 +5,11 @@ This paper has been accepted by [IEEE internet of things journal 2025.](https://
 
 
 ## Datasets
-The datasets can be download from [https://github.com/Davidham3/STSGCN], [https://github.com/liyaguang/DCRNN], [https://github.com/JIANGYUE61610306/SAGDFN] and [https://github.com/liuxu77/LargeST]. 
-
+The original datasets can be download from [https://github.com/Davidham3/STSGCN], [https://github.com/liyaguang/DCRNN], [https://github.com/JIANGYUE61610306/SAGDFN] and [https://github.com/liuxu77/LargeST]. Also, you can generate train、val、and test datesets by running the following code:
+```
+python data.py
+```
+Please note that different datasets has different sampling interval, it is necessary to change the the "tod" in the code!
 
 ## Train Commands
 Run the following code to train the model.

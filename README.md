@@ -3,6 +3,12 @@ This is the pytorch implementation of TWIST.
 
 This paper has been accepted by [IEEE internet of things journal 2025.](https://doi.org/10.1016/j.inffus.2025.102978)
 
+## Dependencies
+Run the following code to install python packages.
+
+```
+pip install pandas tables scipy 
+```
 
 ## Datasets
 The original datasets can be download from [https://github.com/Davidham3/STSGCN], [https://github.com/liyaguang/DCRNN], [https://github.com/JIANGYUE61610306/SAGDFN] and [https://github.com/liuxu77/LargeST]. Also, you can generate train、val、and test datesets by running the following code:

@@ -15,7 +15,7 @@ The original datasets can be download from [https://github.com/Davidham3/STSGCN]
 ```
 python data.py
 ```
-Please note that different datasets has different sampling interval, it is necessary to change the the "tod" in the code!
+Please note that different datasets has different sampling interval, it is necessary to change the the corresponding parameters (like "tod") in the code!
 
 ## Train Commands
 Run the following code to train the model.

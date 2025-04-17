@@ -15,7 +15,7 @@ The original datasets can be download from [https://github.com/Davidham3/STSGCN]
 ```
 python data.py
 ```
-Please note that data in different formats can be read in different ways. Moreover, different datasets has different sampling interval, it is necessary to change the the corresponding parameters (like "tod" and "dow") in the code!
+Please note that data in different formats should be read in different ways. Moreover, different datasets has different sampling interval, it is necessary to change the the corresponding parameters (like "tod" and "dow") in the code!
 
 ## Train Commands
 Run the following code to train the model.

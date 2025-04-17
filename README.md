@@ -1,7 +1,7 @@
 # TWIST
 This is the pytorch implementation of TWIST. 
 
-This paper has been accepted by [IEEE internet of things journal 2025.](https://doi.org/10.1016/j.inffus.2025.102978)
+This paper has been accepted by [IEEE internet of things journal 2025.](https://ieeexplore.ieee.org/document/10966151)
 
 ## Dependencies
 Run the following code to install python packages.
@@ -34,12 +34,14 @@ If you find our work is helpful, please cite as:
 
 
 ```
-@article{wang2025hybrid,
-  title={Hybrid spatial--temporal graph neural network for traffic forecasting},
-  author={Wang, Peng and Feng, Longxi and Zhu, Yijie and Wu, Haopeng},
-  journal={Information Fusion},
-  pages={102978},
+@ARTICLE{10966151,
+  author={Wang, Peng and Feng, Longxi and Zhang, Wenhao and Hui, Kanghua},
+  journal={IEEE Internet of Things Journal}, 
+  title={TWIST: An Efficient Spatial-Temporal Transformer With Temporal Window and Sparse Attention for Traffic Forecasting}, 
   year={2025},
-  publisher={Elsevier}
-}
+  volume={},
+  number={},
+  pages={1-1},
+  keywords={Forecasting;Computational modeling;Feature extraction;Transformers;Predictive models;Correlation;Attention mechanisms;Accuracy;Stacking;Long short term memory;Spatial-temporal data;Attention mechanism;Traffic forecasting;Deep learning},
+  doi={10.1109/JIOT.2025.3561542}}
 ```

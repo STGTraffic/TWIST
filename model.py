@@ -141,9 +141,9 @@ class TemporalAttention(nn.Module):
             v = self.v_fc(x).reshape(B, T, self.num_heads, 
                                      C // self.num_heads).permute(0, 2, 1, 3)
             #print(v.shape)
-            x = x.permute(0, 2, 1)  # 变换维度，形状变为 [B, C, T]
-            qk = self.qk_conv(x)  # 卷积操作
-            qk = qk.permute(0, 2, 1)  # 变回 [B, T, C*2]
+            x = x.permute(0, 2, 1)  #  [B, C, T]
+            qk = self.qk_conv(x)  
+            qk = qk.permute(0, 2, 1)  # [B, T, C*2]
             qk = qk.reshape(B, T, 2, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
             q, k = qk[0], qk[1]
         else:
@@ -164,16 +164,15 @@ class TemporalAttention(nn.Module):
 
 
 class MTWSA(nn.Module):
-    # Causal Temporal MSA
     def __init__(self,
-                 dim = 128,  # hidden dim
-                 depth = 4,  # the number of MSA in CT-MSA
-                 heads = 2,  # the number of heads
-                 window_size = 12,  # the size of local window
-                 mlp_dim = 64,  # mlp dimension
-                 num_time = 12,  # the number of time slot
-                 dropout=0.,  # dropout rate
-                 device='cuda:0'):  # device, e.g., cuda
+                 dim = 128, 
+                 depth = 4, 
+                 heads = 2,  
+                 window_size = 12,  
+                 mlp_dim = 64,  
+                 num_time = 12,  
+                 dropout=0.,  
+                 device='cuda:0'):  
         super().__init__()
         self.pos_embedding = nn.Parameter(torch.randn(1, num_time, dim))
         self.layers = nn.ModuleList([
@@ -182,7 +181,7 @@ class MTWSA(nn.Module):
                               window_size=window_size, 
                               dropout=dropout, 
                               device=device)
-                for _ in range(depth)  # num_layers 是你需要的层数
+                for _ in range(depth)  
             ])
         self.dim = dim
         self.depth = depth
@@ -190,30 +189,14 @@ class MTWSA(nn.Module):
         self.window_size = window_size
         self.mlp_dim = mlp_dim
         self.num_time = num_time
-        
-        
-        
 
     def forward(self, x):
-        """
-        #use these code can obtain shorter traning time in long-term forecasting
-        b_prev, c_prev, n_prev, t_prev = x.shape
-        
-        if t_prev > 12:
-            # Reshape the input to (b*f, n, t)
-            x = x.view(b_prev*c_prev, n_prev, t_prev)
-            # Use 2D average pooling. Kernel size (1, 5) means pooling over the time axis (t) only
-            x = F.avg_pool2d(x.unsqueeze(1), kernel_size=(1, 5), stride=(1, 5)).squeeze(1)
-            # Reshape the input back to (b, f, n, t//5)
-        x = x.view(b_prev, c_prev, n_prev, -1)
-        """
         b, c, n, t = x.shape
         res = x
         x = x.permute(0, 2, 3, 1).reshape(b*n, t, c)  # [b*n, t, c]
         x = x + self.pos_embedding  # [b*n, t, c]
         for attn in self.layers:
             x = attn(x) + x
-            #x = ff(x) + x
         x = x.reshape(b, n, t, c).permute(0, 3, 1, 2)
         x = x[..., -1].unsqueeze(-1) + res[..., -1].unsqueeze(-1)
         return x
@@ -224,17 +207,12 @@ class Encoder(nn.Module):
         "Take in model size and number of heads."
         super(Encoder, self).__init__()
         assert d_model % head == 0
-        self.d_k = d_model // head  # We assume d_v always equals d_k
+        self.d_k = d_model // head 
         self.head = head
         self.num_nodes = num_nodes
         self.seq_length = seq_length
         self.d_model = d_model
-        
-
         self.attention = SpatialAttention(factor=5, scale=None, attention_dropout=0.1, num_nodes=self.num_nodes)
-
-        
-        
         self.LayerNorm = LayerNorm(
             [d_model, num_nodes, seq_length], elementwise_affine=False
         )
@@ -250,24 +228,17 @@ class Encoder(nn.Module):
         # 64 64 170 12
         #print('input', input.shape)        #input torch.Size([64, 256, 170, 1])
         
-        
         Q, K, V = self.q(input), self.k(input), self.v(input)
-
-        Q = Q.permute(0, 2, 3, 1)  #input torch.Size([64, 170, 1, 256])
-        K = K.permute(0, 2, 3, 1)  #input torch.Size([64, 170, 1, 256])
-        V = V.permute(0, 2, 3, 1)  #input torch.Size([64, 170, 1, 256])
+        Q = Q.permute(0, 2, 3, 1)  #torch.Size([64, 170, 1, 256])
+        K = K.permute(0, 2, 3, 1)  
+        V = V.permute(0, 2, 3, 1)  
         B, N, t, d = Q.shape
         
-        Q = Q.view(B, N, t, 2, 128).transpose(1, 3)
-        #print('Q', Q.shape)               #Q torch.Size([64, 2, 1, 170, 128])
+        Q = Q.view(B, N, t, 2, 128).transpose(1, 3)#Q torch.Size([64, 2, 1, 170, 128])  
         K = K.view(B, N, t, 2, 128).transpose(1, 3)
         V = V.view(B, N, t, 2, 128).transpose(1, 3)
         x, weight, bias = self.attention(Q, K, V)
 
-        #x = self.attention(Q, K, V)
-        #print('x', x.shape)                #torch.Size([64, 170, 1, 256])
-        #print('x', x.shape)
-        #print('input', input.shape)
         x = x + input
         x = self.LayerNorm(x)
         x = self.dropout1(x)
@@ -291,26 +262,20 @@ class SpatialAttention(nn.Module):
         self.linear = Conv(256)
         self.lambda_weight = nn.Parameter(torch.tensor(0.5)) 
     
-    def _QK_gpt(self, Q, K, sample_k, n_top):
+    def _QK(self, Q, K, sample_k, n_top):
         B, H, T, N, D = Q.shape
 
-        # **优化 1：改进 K 的采样方式**
-        # 直接从 K 选取 sample_k 个点，而不是扩展整个 N 维度
         index_sample = torch.randint(0, N, (sample_k,), device=Q.device)  # 随机采样 K
         K_sample = K[:, :, :, index_sample, :]  # 只取部分 K 进行计算
 
-        # **优化 2：减少 Q_K 计算维度**
         Q_K_sample = torch.matmul(Q, K_sample.transpose(-2, -1))  # (B, H, T, N, sample_k)
 
-        # **优化 3：避免 log(0) 计算熵**
         S = Q_K_sample
         p = S / (S.sum(dim=-1, keepdim=True) + 1e-10)  # Normalize
         entropy = -torch.sum(p * torch.log(p + 1e-10), dim=-1)  # Compute entropy
 
-        # **优化 4：减少 top-k 操作的开销**
         entropy_topk, index = entropy.topk(n_top, dim=-1, largest=False, sorted=False)
 
-        # **优化 5：避免不必要的索引**
         Q_reduce = Q.gather(dim=3, index=index.unsqueeze(-1).expand(-1, -1, -1, -1, D))
         Q_K = torch.matmul(Q_reduce, K.transpose(-2, -1))  # (B, H, T, n_top, N) #calculate att between significant Q' and Keys
 
@@ -323,29 +288,17 @@ class SpatialAttention(nn.Module):
 
         return context
 
-    
-            
     def _update_context_gpt(self, context_in, V, scores, index, N, Q=None, K=None):
         B, H, T, _, D = V.shape
     
-        attn = torch.softmax(scores, dim=-1)
-        #print(attn.shape) #torch.Size([64, 2, 1, 30, 250])
+        attn = torch.softmax(scores, dim=-1)#torch.Size([64, 2, 1, 30, 250])
 
         context_activate = torch.matmul(attn, V).type_as(context_in)                      # update activate nodes
-        """
+        
         batch_idx = torch.arange(B, device=V.device)[:, None, None, None]
         head_idx = torch.arange(H, device=V.device)[None, :, None, None]
         time_idx = torch.arange(T, device=V.device)[None, None, :, None]
 
-        # 选取最相关的 Query
-        #print(index.shape) #torch.Size([64, 2, 1, 30])
-        active_Q = Q[batch_idx, head_idx, time_idx, index, :].contiguous()
-        
-        # 计算 Q' 和 Keys 之间的相似度
-        sim = torch.matmul(active_Q, K.transpose(-2, -1))
-        #print(sim.shape) #torch.Size([64, 2, 1, 30, 250])
-        sim_weights = torch.softmax(sim, dim=-2)
-        """
         #find most relevent nodes for passive nodes according to sim_weights
         sim_weights = attn
         # 选取 V 中对应的特征
@@ -356,8 +309,6 @@ class SpatialAttention(nn.Module):
         context_passive = torch.matmul(sim_weights.transpose(-2, -1), active_features)     # update passive nodes
 
         # 计算融合后的值
-        #print(context_activate.shape) torch.Size([64, 2, 1, 30, 128])
-        #print(context_passive.shape)  torch.Size([64, 2, 1, 250, 128])
         lambda_weight = torch.sigmoid(self.lambda_weight)  
                                                                                             
         context_passive = torch.gather(context_passive, dim=-2, index=index.unsqueeze(-1).expand(-1, -1, -1, -1, D))  # [B, H, T, n_top, D]
@@ -377,7 +328,7 @@ class SpatialAttention(nn.Module):
         U_part = U_part if U_part < N else N
         u = u if u < N else N
 
-        scores_top, index = self._QK_gpt(queries, keys, sample_k=U_part, n_top=u)
+        scores_top, index = self._QK(queries, keys, sample_k=U_part, n_top=u)
         # Add scale factor
         scale = 1. / math.sqrt(D)
         scores_top = scores_top * scale
@@ -387,7 +338,6 @@ class SpatialAttention(nn.Module):
         context = self._update_context_gpt(context, values, scores_top, index, N, queries, keys)
 
         context = context.permute(0, 3, 2, 1, 4).contiguous()
-        
         context = context.reshape(B, -1, N, T)
         x = self.linear(context)
         if self.num_nodes not in [170, 358,5]:

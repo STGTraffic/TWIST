@@ -404,9 +404,6 @@ class TWIST(nn.Module):
         )
 
 
-    def param_num(self):
-        return sum([param.nelement() for param in self.parameters()])
-    
     def param_num_layer(self):
         total_params = 0
         for name, param in self.named_parameters():

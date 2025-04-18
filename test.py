@@ -31,22 +31,18 @@ def main():
     if args.data == "PEMS08":
         args.data = "data//"+args.data
         args.num_nodes = 170
-        args.adjdata = "data/adj/adj_PEMS08_gs.npy"
     
     elif args.data == "PEMS08_36":
         args.data = "data//"+args.data
         args.num_nodes = 170
-        args.adjdata = "data/adj/adj_PEMS08_gs.npy"
     
     elif args.data == "PEMS08_48":
         args.data = "data//"+args.data
         args.num_nodes = 170
-        args.adjdata = "data/adj/adj_PEMS08_gs.npy"
 
     elif args.data == "PEMS03":
         args.data = "data//"+args.data
         args.num_nodes = 358
-        args.adjdata = "data/adj/adj_PEMS03_gs.npy"
 
     elif args.data == "PEMS04":
         args.data = "data//" + args.data
@@ -55,37 +51,38 @@ def main():
     elif args.data == "PEMS04_36":
         args.data = "data//"+args.data
         args.num_nodes = 307
-        args.adjdata = "data/adj/adj_PEMS04_gs.npy"
 
     elif args.data == "PEMS04_48":
         args.data = "data//"+args.data
         args.num_nodes = 307
-        args.adjdata = "data/adj/adj_PEMS04_gs.npy"
     
     elif args.data == "PEMS07":
         args.data = "data//"+args.data
         args.num_nodes = 883
-        args.adjdata = "data/adj/adj_PEMS07_gs.npy"
 
     elif args.data == "bike_drop":
         args.data = "data//" + args.data
         args.num_nodes = 250
-        args.adjdata = "data/adj/adj_PEMS07_gs.npy"
 
     elif args.data == "bike_pick":
         args.data = "data//" + args.data
         args.num_nodes = 250
-        args.adjdata = "data/adj/adj_PEMS07_gs.npy"
 
     elif args.data == "taxi_drop":
         args.data = "data//" + args.data
         args.num_nodes = 266
-        args.adjdata = "data/adj/adj_PEMS07_gs.npy"
 
     elif args.data == "taxi_pick":
         args.data = "data//" + args.data
         args.num_nodes = 266
-        args.adjdata = "data/adj/adj_PEMS07_gs.npy"
+
+    elif args.data == "Carpark":
+        args.data = "data//" + args.data
+        args.num_nodes = 1918
+
+    elif args.data == "GBA":
+        args.data = "data//" + args.data
+        args.num_nodes = 2352
 
     device = torch.device(args.device)
 

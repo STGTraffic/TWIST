@@ -4,7 +4,7 @@ This is the pytorch implementation of TWIST.
 This paper has been accepted by [IEEE internet of things journal 2025.](https://ieeexplore.ieee.org/document/10966151)
 
 ## Dependencies
-Run the following code to install python packages.
+The code is build on python 3.8, pytorch 1.11 and cuda 11.3. Run the following code to install python packages.
 
 ```
 pip install pandas tables scipy h5py 

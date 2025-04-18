@@ -288,7 +288,7 @@ class SpatialAttention(nn.Module):
 
         return context
 
-    def _update_context_gpt(self, context_in, V, scores, index, N, Q=None, K=None):
+    def _update_context(self, context_in, V, scores, index, N, Q=None, K=None):
         B, H, T, _, D = V.shape
     
         attn = torch.softmax(scores, dim=-1)#torch.Size([64, 2, 1, 30, 250])
@@ -335,7 +335,7 @@ class SpatialAttention(nn.Module):
         # Get the context
         context = self._get_initial_context(values, N)
 
-        context = self._update_context_gpt(context, values, scores_top, index, N, queries, keys)
+        context = self._update_context(context, values, scores_top, index, N, queries, keys)
 
         context = context.permute(0, 3, 2, 1, 4).contiguous()
         context = context.reshape(B, -1, N, T)

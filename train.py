@@ -7,7 +7,7 @@ import util
 import os
 from util import *
 import random
-from model import STAMT
+from model import TWIST
 from ranger21 import Ranger
 import torch.optim as optim
 
@@ -56,7 +56,7 @@ class trainer:
         wdecay,
         device,
     ):
-        self.model = STAMT(
+        self.model = TWIST(
             device, input_dim, channels, num_nodes, input_len, output_len, dropout
         )
         self.model.to(device)

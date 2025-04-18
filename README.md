@@ -1,7 +1,7 @@
 # TWIST
 This is the pytorch implementation of TWIST. 
 
-This paper has been accepted by [IEEE internet of things journal 2025.](https://ieeexplore.ieee.org/document/10966151)
+This paper has been accepted by [IEEE internet of things journal 2025.](https://doi.org/10.1109/JIOT.2025.3561542)
 
 ## Dependencies
 The code is build on python 3.8, pytorch 1.11 and cuda 11.3. Run the following code to install python packages.

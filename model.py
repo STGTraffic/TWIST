@@ -280,20 +280,14 @@ class SpatialAttention(nn.Module):
         Q_K = torch.matmul(Q_reduce, K.transpose(-2, -1))  # (B, H, T, n_top, N) #calculate att between significant Q' and Keys
 
         return Q_K, index
-    
-    def _get_initial_context(self, V, N):
-        B, H, T, N, D = V.shape
-        V_sum = V.mean(dim=-2)  # Average V
-        context = V_sum.unsqueeze(-2).expand(B, H, T, N, V_sum.shape[-1]).clone()
 
-        return context
 
-    def _update_context(self, context_in, V, scores, index, N, Q=None, K=None):
+    def _update_context(self,  V, scores, index, N, Q=None, K=None):
         B, H, T, _, D = V.shape
     
         attn = torch.softmax(scores, dim=-1)#torch.Size([64, 2, 1, 30, 250])
 
-        context_activate = torch.matmul(attn, V).type_as(context_in)                      # update activate nodes
+        context_activate = torch.matmul(attn, V).to(dtype=torch.float32)                      # update activate nodes
         
         batch_idx = torch.arange(B, device=V.device)[:, None, None, None]
         head_idx = torch.arange(H, device=V.device)[None, :, None, None]
@@ -301,8 +295,11 @@ class SpatialAttention(nn.Module):
 
         #find most relevent nodes for passive nodes according to sim_weights
         sim_weights = attn
+        
+        # 计算 context_passive
+        sim_weights = sim_weights[..., :context_activate.shape[3], :]
+        
         context_global = torch.matmul(sim_weights.transpose(-2, -1), context_activate)     # update all nodes using active nodes
-        #print('context_passive', context_passive.shape)#context_passive torch.Size([64, 2, 1, 170, 128])
         context_global = context_global.scatter_(                                          # covering active nodes
             dim=-2,
             index=index.unsqueeze(-1).expand(-1, -1, -1, -1, D),
@@ -325,9 +322,9 @@ class SpatialAttention(nn.Module):
         scale = 1. / math.sqrt(D)
         scores_top = scores_top * scale
         # Get the context
-        context = self._get_initial_context(values, N)
+        #context = self._get_initial_context(values, N)
 
-        context = self._update_context(context, values, scores_top, index, N, queries, keys)
+        context = self._update_context(values, scores_top, index, N, queries, keys)
 
         context = context.permute(0, 3, 2, 1, 4).contiguous()
         context = context.reshape(B, -1, N, T)
@@ -335,6 +332,7 @@ class SpatialAttention(nn.Module):
         if self.num_nodes not in [170, 358,5]:
             x = x * self.weight + self.bias + x
         return x, self.weight, self.bias
+
 
 class TWIST(nn.Module):
     def __init__(

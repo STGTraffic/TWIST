@@ -301,15 +301,14 @@ class SpatialAttention(nn.Module):
 
         #find most relevent nodes for passive nodes according to sim_weights
         sim_weights = attn
-        sim_weights = sim_weights[..., :context_activate.shape[3], :]
-        context_passive = torch.matmul(sim_weights.transpose(-2, -1), context_activate)     # update passive nodes
-
-        context_in.scatter_(
+        context_global = torch.matmul(sim_weights.transpose(-2, -1), context_activate)     # update all nodes using active nodes
+        #print('context_passive', context_passive.shape)#context_passive torch.Size([64, 2, 1, 170, 128])
+        context_global = context_global.scatter_(                                          # covering active nodes
             dim=-2,
             index=index.unsqueeze(-1).expand(-1, -1, -1, -1, D),
             src=context_activate)
 
-        return context_in
+        return context_global
 
 
     def forward(self, queries, keys, values):

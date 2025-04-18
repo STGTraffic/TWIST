@@ -111,7 +111,7 @@ class FeedForward(nn.Module):
         return self.net(x)
         
 class TemporalAttention(nn.Module):
-    def __init__(self, dim, heads=2, window_size=1, qkv_bias=False, qk_scale=None, dropout=0., causal=True, device=None):
+    def __init__(self, dim, heads=2, window_size=1, qkv_bias=False, qk_scale=None, dropout=0., causal=False, device=None):
         super().__init__()
         assert dim % heads == 0, f"dim {dim} should be divided by num_heads {heads}."
 
@@ -202,10 +202,10 @@ class MTWSA(nn.Module):
         return x
 
 
-class Spatial_block(nn.Module):
+class Encoder(nn.Module):
     def __init__(self, device, d_model, head, num_nodes, seq_length=1, dropout=0.1):
         "Take in model size and number of heads."
-        super(Spatial_block, self).__init__()
+        super(Encoder, self).__init__()
         assert d_model % head == 0
         self.d_k = d_model // head 
         self.head = head
@@ -383,13 +383,10 @@ class TWIST(nn.Module):
         self.network_channel = channels * 2
 
 
-        self.TW_attetion = MTWSA(dim = 128, depth = 2, heads = 1, 
-                                  window_size = 12, mlp_dim= 64, num_time = 12,  dropout = 0., device= 'cuda:0')
+        self.TW_attetion = MTWSA(dim = self.node_dim, depth = 2, heads = 1, 
+                                  window_size = 12, mlp_dim= 64, num_time = self.input_len,  dropout = 0., device= self.device)
 
-
-
-        
-        self.SpatialBlock = Spatial_block(
+        self.SpatialBlock = Encoder(
             device,
             d_model=self.network_channel,
             head=self.head,
@@ -423,24 +420,12 @@ class TWIST(nn.Module):
         input_data = history_data
         history_data = history_data.permute(0, 3, 2, 1)
         input_data = self.start_conv(input_data)                   
-        #print('input_data', input_data.shape)                    #input_data torch.Size([64, 128, 170, 12])
 
         input_data = self.TW_attetion(input_data)
-
-        
-            
-        
-
-         
         tem_emb = self.Temb(history_data)
-
-
-
         data_st = torch.cat([input_data] + [tem_emb], dim=1)
 
-
         data_st = self.SpatialBlock(data_st) + self.fc_st(data_st)
-
 
         prediction = self.regression_layer(data_st)
 

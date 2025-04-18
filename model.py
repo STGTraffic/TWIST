@@ -202,10 +202,10 @@ class MTWSA(nn.Module):
         return x
 
 
-class Encoder(nn.Module):
+class Spatial_block(nn.Module):
     def __init__(self, device, d_model, head, num_nodes, seq_length=1, dropout=0.1):
         "Take in model size and number of heads."
-        super(Encoder, self).__init__()
+        super(Spatial_block, self).__init__()
         assert d_model % head == 0
         self.d_k = d_model // head 
         self.head = head
@@ -389,7 +389,7 @@ class TWIST(nn.Module):
 
 
         
-        self.SpatialBlock = Encoder(
+        self.SpatialBlock = Spatial_block(
             device,
             d_model=self.network_channel,
             head=self.head,

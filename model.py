@@ -301,21 +301,14 @@ class SpatialAttention(nn.Module):
 
         #find most relevent nodes for passive nodes according to sim_weights
         sim_weights = attn
-        # 选取 V 中对应的特征
-        active_features = V[batch_idx, head_idx, time_idx, index, :].contiguous()
-
-        # 计算 context_passive
         sim_weights = sim_weights[..., :context_activate.shape[3], :]
-        context_passive = torch.matmul(sim_weights.transpose(-2, -1), active_features)     # update passive nodes
+        context_passive = torch.matmul(sim_weights.transpose(-2, -1), context_activate)     # update passive nodes
 
-        # 计算融合后的值
-        lambda_weight = torch.sigmoid(self.lambda_weight)  
-                                                                                            
-        context_passive = torch.gather(context_passive, dim=-2, index=index.unsqueeze(-1).expand(-1, -1, -1, -1, D))  # [B, H, T, n_top, D]
+        context_in.scatter_(
+            dim=-2,
+            index=index.unsqueeze(-1).expand(-1, -1, -1, -1, D),
+            src=context_activate)
 
-        # 更新 context_in
-        context_in.scatter_(dim=-2, index=index.unsqueeze(-1).expand(-1, -1, -1, -1, D),    # update SQA
-                   src=lambda_weight * context_activate + (1 - lambda_weight) * context_passive)
         return context_in
 
 

@@ -80,7 +80,7 @@ def main():
         args.data = "data//" + args.data
         args.num_nodes = 1918
 
-    elif args.data == "GBA":
+    elif args.data == "gba_his_2019":
         args.data = "data//" + args.data
         args.num_nodes = 2352
 

@@ -1,7 +1,7 @@
 import util
 import argparse
 import torch
-from model import STAMT
+from model import TWIST
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -22,7 +22,7 @@ parser.add_argument(
     "--weight_decay", type=float, default=0.0001, help="weight decay rate"
 )
 parser.add_argument('--checkpoint', type=str,
-                    default='/home/lay/lay/code/Work2_a/STAMT_qkv/logs/2023-10-31-11:48:57-PEMS04/best_model.pth', help='')
+                    default='/home/lay/lay/code/Work2_a/TWIST_qkv/logs/2023-10-31-11:48:57-PEMS04/best_model.pth', help='')
 parser.add_argument('--plotheatmap', type=str, default='True', help='')
 args = parser.parse_args()
 
@@ -90,7 +90,7 @@ def main():
     device = torch.device(args.device)
 
 
-    model = STAMT(
+    model = TWIST(
             device, args.input_dim, args.channels, args.num_nodes, args.input_len, args.output_len, args.dropout
         )
     model.to(device)
@@ -143,8 +143,8 @@ def main():
     print(realy.shape)
     print(yhat1.shape)
 
-    torch.save(realy,"stamt_04real.pt")
-    torch.save(yhat1,"stamt_04pred.pt")
+    torch.save(realy,"TWIST_04real.pt")
+    torch.save(yhat1,"TWIST_04pred.pt")
 
 if __name__ == "__main__":
     main()

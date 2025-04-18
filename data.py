@@ -33,7 +33,7 @@ def generate_graph_seq2seq_io_data(
     #data = pd.Dataframe(data)
     data_list = [data]
     if add_time_in_day:
-        # numerical time_of_day
+        # numerical time_of_day #如果采样间隔是5分钟，则为288；否则若15分钟，则为96；若30，则48
         tod = [i % 288 /
                288 for i in range(data.shape[0])]
         tod = np.array(tod)
@@ -66,9 +66,13 @@ def generate_graph_seq2seq_io_data(
 
 def generate_train_val_test(args):
     # df = pd.read_hdf(args.traffic_df_filename)#用于读取.h5文件
+        
     df = np.load(args.traffic_df_filename)['data'][:, :, 0]#用于读取npz文件
-    
-    print(df.shape)
+        
+    #df = pd.read_csv(args.traffic_df_filename, header=None).transpose()#Urban-core/Urban-mix
+    #with h5py.File(args.traffic_df_filename, 'r') as f:  # 用于读取NYC-bike和taxi数据集
+            #data = f['bike_drop'][:]       # 读取数据集的不同特征
+    print('df', df.shape)
     # 0 is the latest observed sample.
     x_offsets = np.sort(
         # np.concatenate(([-week_size + 1, -day_size + 1], np.arange(-11, 1, 1)))

@@ -65,7 +65,7 @@ class trainer:
         self.loss = util.MAE_torch
         self.scaler = scaler
         self.clip = 5
-        print("The number of parameters: {}".format(self.model.param_num()))
+        print("The number of parameters: {}".format(self.model.param_num_layer()))
         print(self.model)
         # exit()
 

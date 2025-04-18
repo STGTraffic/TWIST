@@ -15,7 +15,7 @@ The original datasets can be download from [https://github.com/Davidham3/STSGCN]
 ```
 python data.py
 ```
-Please note that data in different formats should be read in different ways. Moreover, different datasets has different sampling interval, it is necessary to change the the corresponding parameters (like "tod" and "dow") in the code! If you want to generate the datasets for long-term forecasting, please change the size of slide windows (if 60, set "-11" to "-59" and "13" to "61").
+Please note that data in different formats should be read in different ways. Moreover, different datasets has different sampling interval, it is necessary to change the the corresponding parameters (like "tod" and "dow") in the code! If you want to generate the datasets for long-term forecasting, please change the size of slide windows (if generate 60 steps, set "-11" to "-59" and "13" to "61" in line 79 and 82).
 
 ## Train Commands
 Run the following code to train the model.

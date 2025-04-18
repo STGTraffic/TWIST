@@ -7,7 +7,7 @@ This paper has been accepted by [IEEE internet of things journal 2025.](https://
 Run the following code to install python packages.
 
 ```
-pip install pandas tables scipy 
+pip install pandas tables scipy h5py 
 ```
 
 ## Datasets

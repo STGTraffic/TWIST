@@ -11,32 +11,6 @@ import numpy as np
 import os
 import pandas as pd
 
-def add_gaussian_noise(data, mean, std_dev, proportion):
-    """
-    给数据添加高斯噪声。
-    
-    参数：
-    data (np.ndarray): 原始数据。
-    mean (float): 高斯噪声的均值。
-    std_dev (float): 高斯噪声的标准差。
-    proportion (float): 添加噪声的比例，取值范围在0到1之间。
-    
-    返回：
-    np.ndarray: 添加噪声后的数据。
-    """
-    noisy_data = data.copy()
-    num_samples = data.shape[0]
-    num_noisy_samples = int(num_samples * proportion)
-    noisy_indices = np.random.choice(num_samples, num_noisy_samples, replace=False)
-    
-    noise = np.random.normal(mean, std_dev, data[noisy_indices].shape)
-    
-    # 确保噪声为非负数
-    noise = np.maximum(noise, 0)
-    
-    noisy_data[noisy_indices] += noise
-    return noisy_data
-
 def generate_graph_seq2seq_io_data(
         df, x_offsets, y_offsets, add_time_in_day=True, add_day_in_week=False, scaler=None
 ):
@@ -91,15 +65,14 @@ def generate_graph_seq2seq_io_data(
 
 
 def generate_train_val_test(args):
-    # df = pd.read_hdf(args.traffic_df_filename)
-    df = np.load(args.traffic_df_filename)['data']
-    # print(df)
-    df = df[:, :, 0]
+    # df = pd.read_hdf(args.traffic_df_filename)#用于读取.h5文件
+    df = np.load(args.traffic_df_filename)['data'][:, :, 0]#用于读取npz文件
+    
     print(df.shape)
     # 0 is the latest observed sample.
     x_offsets = np.sort(
         # np.concatenate(([-week_size + 1, -day_size + 1], np.arange(-11, 1, 1)))
-        np.concatenate((np.arange(-11, 1, 1),))
+        np.concatenate((np.arange(-11, 1, 1),))#把11改成59且13改为61来生成长期预测数据集
     )
     # Predict the next one hour
     y_offsets = np.sort(np.arange(1, 13, 1))
@@ -112,12 +85,6 @@ def generate_train_val_test(args):
         add_time_in_day=True,
         add_day_in_week=True,
     )
-
-    # 添加高斯噪声
-    #noise_mean = 10
-    #noise_std_dev = 500
-    #noise_proportion = 0.05  # 调整为20%、40%或60%
-    #x = add_gaussian_noise(x, noise_mean, noise_std_dev, noise_proportion)
 
     print("x shape: ", x.shape, ", y shape: ", y.shape)
     # Write the data into npz file.
@@ -159,12 +126,12 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--output_dir", type=str, default="data/PEMS07", help="Output directory."
+        "--output_dir", type=str, default="data/PEMS08", help="Output directory."
     )
     parser.add_argument(
         "--traffic_df_filename",
         type=str,
-        default="data/PEMS07/PEMS07.npz",
+        default="data/PEMS08/PEMS08.npz",
         help="Raw traffic readings.",
     )
     args = parser.parse_args()

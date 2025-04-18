@@ -22,7 +22,7 @@ parser.add_argument(
     "--weight_decay", type=float, default=0.0001, help="weight decay rate"
 )
 parser.add_argument('--checkpoint', type=str,
-                    default='/home/lay/lay/code/Work2_a/TWIST_qkv/logs/2023-10-31-11:48:57-PEMS04/best_model.pth', help='')
+                    default='/logs/2024-10-31-11:48:57-PEMS04/best_model.pth', help='')
 parser.add_argument('--plotheatmap', type=str, default='True', help='')
 args = parser.parse_args()
 

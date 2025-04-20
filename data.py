@@ -10,7 +10,7 @@ import argparse
 import numpy as np
 import os
 import pandas as pd
-
+import h5py
 def generate_graph_seq2seq_io_data(
         df, x_offsets, y_offsets, add_time_in_day=True, add_day_in_week=False, scaler=None
 ):
@@ -71,7 +71,7 @@ def generate_train_val_test(args):
         
     #df = pd.read_csv(args.traffic_df_filename, header=None).transpose()#Urban-core/Urban-mix
     #with h5py.File(args.traffic_df_filename, 'r') as f:  # 用于读取NYC-bike和taxi数据集
-            #data = f['bike_drop'][:]       # 读取数据集的不同特征
+            #df = f['bike_drop'][:]       # 读取数据集的不同特征
     print('df', df.shape)
     # 0 is the latest observed sample.
     x_offsets = np.sort(

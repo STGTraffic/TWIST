@@ -282,7 +282,9 @@ class SpatialAttention(nn.Module):
         K_expand = K.unsqueeze(-3).expand(B, H, T, N, N, D)
         index_sample = torch.randint(N, (N, sample_k))  
         K_sample = K_expand[:, :, :, torch.arange(N).unsqueeze(1), index_sample, :]  # Broadcasting
-        Q_K_sample = torch.matmul(Q.unsqueeze(-2), K_sample.transpose(-2, -1)).squeeze(-2)
+        #Q_K_sample = torch.matmul(Q.unsqueeze(-2), K_sample.transpose(-2, -1)).squeeze(-2)
+        Q_K_sample = torch.einsum('bhtnd,bhtnmd->bhtnm', Q, K_sample)
+
 
         S = Q_K_sample
         p = S / S.sum(dim=-1, keepdim=True)  
@@ -294,7 +296,7 @@ class SpatialAttention(nn.Module):
         return Q_K, index
 
     def _get_initial_context(self, V, N):
-        return V.mean(dim=-2, keepdim=True).expand_as(V).clone()
+        return V.mean(dim=-2, keepdim=True).expand_as(V)
 
     def _update_context(self, context_in, V, scores, index, N, Q=None, K=None):
         B, H, T, N, D = V.shape
@@ -302,21 +304,14 @@ class SpatialAttention(nn.Module):
         batch_idx = torch.arange(B)[:, None, None, None]
         head_idx = torch.arange(H)[None, :, None, None]
         time_idx = torch.arange(T)[None, None, :, None]
-        
-        if Q is None or K is None:
 
-            attn = torch.softmax(scores, dim=-1)
-            updated = torch.einsum('bhntm,bhmtd->bhntd', attn, V)
-            context_in[batch_idx, head_idx, time_idx, index] = updated
-            
-        else:
            
-            active_Q = Q[batch_idx, head_idx, time_idx, index]
-            sim = torch.einsum('bhtnd,bhtmd->bhtnm', active_Q, K)
-            sim_weights = sim.softmax(dim=-2)
-            active_V = V[batch_idx, head_idx, time_idx, index]
-            updated_features = torch.einsum('bhntm,bhntd->bhnmd', sim_weights, active_V)
-            context_in = context_in + updated_features
+        active_Q = Q[batch_idx, head_idx, time_idx, index]
+        sim = torch.einsum('bhtnd,bhtmd->bhtnm', active_Q, K)
+        sim_weights = sim.softmax(dim=-2)
+        active_V = V[batch_idx, head_idx, time_idx, index]
+        updated_features = torch.einsum('bhntm,bhntd->bhnmd', sim_weights, active_V)
+        context_in = context_in + updated_features
             
         return context_in
 
@@ -336,10 +331,7 @@ class SpatialAttention(nn.Module):
 
         context = self._get_initial_context(values, N)
 
-        if self.num_nodes >1900:
-            context, attn = self._update_context(context, values, scores_top, index, N)
-        else:
-            context = self._update_context(context, values, scores_top, index, N, queries, keys)
+        context = self._update_context(context, values, scores_top, index, N, queries, keys)
         context = context.permute(0, 3, 2, 1, 4).contiguous()
         context = context.reshape(B, N, T, -1)
         

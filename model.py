@@ -213,7 +213,7 @@ class TAWA(nn.Module):
         x = x + self.pos_embedding  # [b*n, t, c]
         for attn, ff in self.layers:
             x = attn(x) + x
-            #x = ff(x) + x  #使用ffn会使carpark从76上升到89s
+            #x = ff(x) + x  
         x = x.reshape(b, n, t, c).permute(0, 3, 1, 2)
         x = x[..., -1].unsqueeze(-1) + res[..., -1].unsqueeze(-1)
         return x

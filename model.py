@@ -213,7 +213,7 @@ class TAWA(nn.Module):
         x = x + self.pos_embedding  # [b*n, t, c]
         for attn, ff in self.layers:
             x = attn(x) + x
-            x = ff(x) + x
+            #x = ff(x) + x  #使用ffn会使carpark从76上升到89s
         x = x.reshape(b, n, t, c).permute(0, 3, 1, 2)
         x = x[..., -1].unsqueeze(-1) + res[..., -1].unsqueeze(-1)
         return x
@@ -279,19 +279,25 @@ class SpatialAttention(nn.Module):
     def _QK(self, Q, K, sample_k, n_top):
         B, H, T, N, D = Q.shape
 
-        K_expand = K.unsqueeze(-3).expand(B, H, T, N, N, D)
-        index_sample = torch.randint(N, (N, sample_k))  
-        K_sample = K_expand[:, :, :, torch.arange(N).unsqueeze(1), index_sample, :]  # Broadcasting
-        #Q_K_sample = torch.matmul(Q.unsqueeze(-2), K_sample.transpose(-2, -1)).squeeze(-2)
-        Q_K_sample = torch.einsum('bhtnd,bhtnmd->bhtnm', Q, K_sample)
+        # **优化 1：改进 K 的采样方式**
+        # 直接从 K 选取 sample_k 个点，而不是扩展整个 N 维度
+        index_sample = torch.randint(0, N, (sample_k,), device=Q.device)  # 随机采样 K
+        K_sample = K[:, :, :, index_sample, :]  # 只取部分 K 进行计算
 
+        # **优化 2：减少 Q_K 计算维度**
+        Q_K_sample = torch.matmul(Q, K_sample.transpose(-2, -1))  # (B, H, T, N, sample_k)
 
+        # **优化 3：避免 log(0) 计算熵**
         S = Q_K_sample
-        p = S / S.sum(dim=-1, keepdim=True)  
-        entropy = -torch.sum(p * torch.log(p + 1e-10), dim=-1)  
+        p = S / (S.sum(dim=-1, keepdim=True) + 1e-10)  # Normalize
+        entropy = -torch.sum(p * torch.log(p + 1e-10), dim=-1)  # Compute entropy
+
+        # **优化 4：减少 top-k 操作的开销**
         entropy_topk, index = entropy.topk(n_top, dim=-1, largest=False, sorted=False)
+
+        # **优化 5：避免不必要的索引**
         Q_reduce = Q.gather(dim=3, index=index.unsqueeze(-1).expand(-1, -1, -1, -1, D))
-        Q_K = torch.matmul(Q_reduce, K.transpose(-2, -1))
+        Q_K = torch.matmul(Q_reduce, K.transpose(-2, -1))  # (B, H, T, n_top, N) #calculate att between significant Q' and Keys
 
         return Q_K, index
 

@@ -110,7 +110,7 @@ class FeedForward(nn.Module):
     def forward(self, x):
         return self.net(x)
         
-class TemporalAttention(nn.Module):
+class Temporal_Attention(nn.Module):
     def __init__(self, dim, heads=2, window_size=1, qkv_bias=False, qk_scale=None, dropout=0., causal=True, device=None):
         super().__init__()
         assert dim % heads == 0, f"dim {dim} should be divided by num_heads {heads}."
@@ -190,7 +190,7 @@ class TAWA(nn.Module):
        
         for i in range(depth):
             self.layers.append(nn.ModuleList([
-                TemporalAttention(dim=dim,
+                Temporal_Attention(dim=dim,
                                   heads=heads,
                                   window_size=window_size,
                                   dropout=dropout,

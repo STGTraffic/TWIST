@@ -1,2 +1,5 @@
 #bike_drop和bike_pick都来源于bike_data,只是生成数据时，选择的特征不一样；nyc_taxi同理
 #bike_drop and bike_pick are both derived from bike_data, only the features chosen to generate the data are different; nyc_taxi is the same.
+
+#在data下创建bike_drop或者bike_pick文件夹，读取bike中的数据并生成在bike_drop或bike_pick下
+#Create a bike_drop or bike_pick folder under data, read the data in the bike and generate it under bike_drop or bike_pick

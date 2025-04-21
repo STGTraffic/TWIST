@@ -8,7 +8,7 @@ import pandas as pd
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--device", type=str, default="cuda:0", help="")
-parser.add_argument("--data", type=str, default="PEMS04", help="data path")
+parser.add_argument("--data", type=str, default="PEMS08", help="data path")
 parser.add_argument("--input_dim", type=int, default=3, help="input_dim")
 parser.add_argument("--channels", type=int, default=128, help="number of nodes")
 parser.add_argument("--num_nodes", type=int, default=170, help="number of nodes")

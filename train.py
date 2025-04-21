@@ -13,10 +13,10 @@ import torch.optim as optim
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--device", type=str, default="cuda:0", help="")
-parser.add_argument("--data", type=str, default="PEMS08", help="data path")
+parser.add_argument("--data", type=str, default="bike_drop", help="data path")
 parser.add_argument("--input_dim", type=int, default=3, help="input_dim")
 parser.add_argument("--channels", type=int, default=128, help="number of nodes")
-parser.add_argument("--num_nodes", type=int, default=170, help="number of nodes")
+parser.add_argument("--num_nodes", type=int, default=1918, help="number of nodes")
 parser.add_argument("--input_len", type=int, default=12, help="input_len")
 parser.add_argument("--output_len", type=int, default=12, help="out_len")
 parser.add_argument("--batch_size", type=int, default=64, help="batch size")
@@ -65,7 +65,7 @@ class trainer:
         self.loss = util.MAE_torch
         self.scaler = scaler
         self.clip = 5
-        print("The number of parameters: {}".format(self.model.param_num_layer()))
+        print("The number of parameters: {}".format(self.model.param_num()))
         print(self.model)
         # exit()
 
@@ -120,6 +120,14 @@ def main():
     if args.data == "PEMS08":
         args.data = "data//" + args.data
         args.num_nodes = 170
+        
+    elif args.data == "Carpark":
+        args.data = "data//" + args.data
+        args.num_nodes = 1918
+        
+    elif args.data == "Urban-mix":
+        args.data = "data//" + args.data
+        args.num_nodes = 1007
 
     elif args.data == "PEMS08_36":
         args.data = "data//" + args.data

@@ -4,8 +4,7 @@ import torch
 from model import TWIST
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--device", type=str, default="cuda:0", help="")
@@ -22,7 +21,7 @@ parser.add_argument(
     "--weight_decay", type=float, default=0.0001, help="weight decay rate"
 )
 parser.add_argument('--checkpoint', type=str,
-                    default='/logs/2024-10-31-11:48:57-PEMS04/best_model.pth', help='')
+                    default='/logs/2025-04-21-10:34:52-PEMS08/best_model.pth', help='')
 parser.add_argument('--plotheatmap', type=str, default='True', help='')
 args = parser.parse_args()
 

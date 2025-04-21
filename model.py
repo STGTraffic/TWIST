@@ -135,7 +135,7 @@ class TemporalAttention(nn.Module):
         self.proj_drop = nn.Dropout(dropout)
 
         self.mask = torch.tril(torch.ones(window_size, window_size)).to(
-            device)  # mask for causality
+            device)   
 
     def forward(self, x):
         B_prev, T_prev, C_prev = x.shape
@@ -146,10 +146,10 @@ class TemporalAttention(nn.Module):
         if self.trend_aware:
             v = self.v_fc(x).reshape(B, T, self.num_heads, 
                                      C // self.num_heads).permute(0, 2, 1, 3)
-            #print(v.shape)
-            x = x.permute(0, 2, 1)  # 变换维度，形状变为 [B, C, T]
-            qk = self.qk_conv(x)  # 卷积操作
-            qk = qk.permute(0, 2, 1)  # 变回 [B, T, C*2]
+
+            x = x.permute(0, 2, 1)  
+            qk = self.qk_conv(x) 
+            qk = qk.permute(0, 2, 1)  
             qk = qk.reshape(B, T, 2, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
             q, k = qk[0], qk[1]
         else:
@@ -157,8 +157,8 @@ class TemporalAttention(nn.Module):
                                   self.num_heads).permute(2, 0, 3, 1, 4)
             q, k, v = qkv[0], qkv[1], qkv[2]
 
-        # merge key padding and attention masks
-        attn = (q @ k.transpose(-2, -1)) * self.scale  # [b, heads, T, T]
+
+        attn = (q @ k.transpose(-2, -1)) * self.scale  
 
         if self.causal:
             attn = attn.masked_fill_(self.mask == 0, float("-inf"))
@@ -189,7 +189,6 @@ class MTWSA(nn.Module):
         self.layers = nn.ModuleList([])
        
         for i in range(depth):
-            #window_size = (i+1)*6    #2, 4,....
             self.layers.append(nn.ModuleList([
                 TemporalAttention(dim=dim,
                                   heads=heads,
@@ -252,7 +251,6 @@ class Encoder(nn.Module):
         B, N, t, d = Q.shape
         
         Q = Q.view(B, N, t, 2, 128).transpose(1, 3)
-        #print('Q', Q.shape)               #Q torch.Size([64, 2, 1, 170, 128])
         K = K.view(B, N, t, 2, 128).transpose(1, 3)
         V = V.view(B, N, t, 2, 128).transpose(1, 3)
         x, weight, bias = self.attention(Q, K, V)
@@ -282,14 +280,13 @@ class SpatialAttention(nn.Module):
         B, H, T, N, D = Q.shape
 
         K_expand = K.unsqueeze(-3).expand(B, H, T, N, N, D)
-        index_sample = torch.randint(N, (N, sample_k))  # Sample K
+        index_sample = torch.randint(N, (N, sample_k))  
         K_sample = K_expand[:, :, :, torch.arange(N).unsqueeze(1), index_sample, :]  # Broadcasting
         Q_K_sample = torch.matmul(Q.unsqueeze(-2), K_sample.transpose(-2, -1)).squeeze(-2)
 
-        # Calculate entropy for each query vector
         S = Q_K_sample
-        p = S / S.sum(dim=-1, keepdim=True)  # Normalize to get probabilities
-        entropy = -torch.sum(p * torch.log(p + 1e-10), dim=-1)  # Adding epsilon to avoid log(0)
+        p = S / S.sum(dim=-1, keepdim=True)  
+        entropy = -torch.sum(p * torch.log(p + 1e-10), dim=-1)  
         entropy_topk, index = entropy.topk(n_top, dim=-1, largest=False, sorted=False)
         Q_reduce = Q.gather(dim=3, index=index.unsqueeze(-1).expand(-1, -1, -1, -1, D))
         Q_K = torch.matmul(Q_reduce, K.transpose(-2, -1))
@@ -301,18 +298,19 @@ class SpatialAttention(nn.Module):
 
     def _update_context(self, context_in, V, scores, index, N, Q=None, K=None):
         B, H, T, N, D = V.shape
-        # Precompute indices
+
         batch_idx = torch.arange(B)[:, None, None, None]
         head_idx = torch.arange(H)[None, :, None, None]
         time_idx = torch.arange(T)[None, None, :, None]
         
         if Q is None or K is None:
-            # Original update logic
+
             attn = torch.softmax(scores, dim=-1)
             updated = torch.einsum('bhntm,bhmtd->bhntd', attn, V)
             context_in[batch_idx, head_idx, time_idx, index] = updated
             
         else:
+           
             active_Q = Q[batch_idx, head_idx, time_idx, index]
             sim = torch.einsum('bhtnd,bhtmd->bhtnm', active_Q, K)
             sim_weights = sim.softmax(dim=-2)
@@ -333,19 +331,14 @@ class SpatialAttention(nn.Module):
         u = u if u < N else N
 
         scores_top, index = self._QK(queries, keys, sample_k=U_part, n_top=u)
-
-        # Add scale factor
         scale = 1. / math.sqrt(D)
         scores_top = scores_top * scale
 
-        # Get the context
         context = self._get_initial_context(values, N)
 
         if self.num_nodes >1900:
-            # For large graphs, call _update_context without queries and keys
             context, attn = self._update_context(context, values, scores_top, index, N)
         else:
-            # For regular graphs, call _update_context with queries and keys
             context = self._update_context(context, values, scores_top, index, N, queries, keys)
         context = context.permute(0, 3, 2, 1, 4).contiguous()
         context = context.reshape(B, N, T, -1)
@@ -357,7 +350,7 @@ class SpatialAttention(nn.Module):
         return context, self.weight, self.bias
     
     
-class STAMT(nn.Module):
+class TWIST(nn.Module):
     def __init__(
         self,
         device,
@@ -395,14 +388,9 @@ class STAMT(nn.Module):
 
         self.network_channel = channels * 2
 
+        self.TW_attetion = MTWSA(dim = channels, depth = 2, heads = 2, 
+                                  window_size = 12, mlp_dim= 64, num_time = input_len,  dropout = 0., device= self.device)
 
-        self.TW_attetion = MTWSA(dim = 128, depth = 2, heads = 2, 
-                                  window_size = 12, mlp_dim= 64, num_time = 12,  dropout = 0., device= 'cuda:0')
-
-
-
-
-        
         self.SpatialBlock = Encoder(
             device,
             d_model=self.network_channel,
@@ -425,14 +413,13 @@ class STAMT(nn.Module):
         return sum([param.nelement() for param in self.parameters()])
 
     def forward(self, history_data):
-        #print('history_data', history_data.shape)                #history_data torch.Size([64, 3, 307, 12])
+
         input_data = history_data
         history_data = history_data.permute(0, 3, 2, 1)
         input_data = self.start_conv(input_data)                   
-        #print('input_data', input_data.shape)                    #input_data torch.Size([64, 128, 170, 12])
-
         input_data = self.TW_attetion(input_data)
         tem_emb = self.Temb(history_data)
+       
         data_st = torch.cat([input_data] + [tem_emb], dim=1)
         data_st = self.SpatialBlock(data_st) + self.fc_st(data_st)
 

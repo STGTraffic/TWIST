@@ -173,7 +173,7 @@ class TemporalAttention(nn.Module):
         return x
 
 
-class MTWSA(nn.Module):
+class TAWA(nn.Module):
 
     def __init__(self,
                  dim = 128,  
@@ -219,10 +219,10 @@ class MTWSA(nn.Module):
         return x
 
 
-class Encoder(nn.Module):
+class Spatial_Attention(nn.Module):
     def __init__(self, device, d_model, head, num_nodes, seq_length=1, dropout=0.1):
         "Take in model size and number of heads."
-        super(Encoder, self).__init__()
+        super(Spatial_Attention, self).__init__()
         assert d_model % head == 0
         self.d_k = d_model // head  # We assume d_v always equals d_k
         self.head = head
@@ -388,10 +388,10 @@ class TWIST(nn.Module):
 
         self.network_channel = channels * 2
 
-        self.TW_attetion = MTWSA(dim = channels, depth = 2, heads = 2, 
+        self.TW_attetion = TAWA(dim = channels, depth = 2, heads = 2, 
                                   window_size = 12, mlp_dim= 64, num_time = input_len,  dropout = 0., device= self.device)
 
-        self.SpatialBlock = Encoder(
+        self.SpatialBlock = Spatial_Attention(
             device,
             d_model=self.network_channel,
             head=self.head,

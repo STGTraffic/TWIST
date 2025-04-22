@@ -24,7 +24,7 @@ Run the following code to train the model.
 python train.py
 ```
 
-Run the following code can test the pre-trained model.
+The pre-trained models are provided, and run the following code to test the model.
 
 ```
 python test.py

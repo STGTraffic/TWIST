@@ -369,7 +369,7 @@ class TWIST(nn.Module):
         self.output_len = output_len
         self.head = 1
         self.blocks = 4
-
+        #time要和data.py中的tod对应
         if num_nodes == 170 or num_nodes == 307 or num_nodes == 358  or num_nodes == 883 :
             time = 288
         elif num_nodes == 250 or num_nodes == 266:

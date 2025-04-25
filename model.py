@@ -219,10 +219,10 @@ class TAWA(nn.Module):
         return x
 
 
-class Spatial_Attention(nn.Module):
+class Spatial_block(nn.Module):
     def __init__(self, device, d_model, head, num_nodes, seq_length=1, dropout=0.1):
         "Take in model size and number of heads."
-        super(Spatial_Attention, self).__init__()
+        super(Spatial_block, self).__init__()
         assert d_model % head == 0
         self.d_k = d_model // head  # We assume d_v always equals d_k
         self.head = head
@@ -388,7 +388,7 @@ class TWIST(nn.Module):
         self.TW_attetion = TAWA(dim = channels, depth = 2, heads = 2, 
                                   window_size = 12, mlp_dim= 64, num_time = input_len,  dropout = 0., device= self.device)
 
-        self.SpatialBlock = Spatial_Attention(
+        self.SpatialBlock = Spatial_block(
             device,
             d_model=self.network_channel,
             head=self.head,

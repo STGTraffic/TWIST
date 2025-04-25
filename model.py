@@ -173,7 +173,7 @@ class Temporal_Attention(nn.Module):
         return x
 
 
-class TAWA(nn.Module):
+class Temporal_block(nn.Module):
 
     def __init__(self,
                  dim = 128,  
@@ -385,7 +385,7 @@ class TWIST(nn.Module):
 
         self.network_channel = channels * 2
 
-        self.TW_attetion = TAWA(dim = channels, depth = 2, heads = 2, 
+        self.TW_attetion = Temporal_block(dim = channels, depth = 2, heads = 2, 
                                   window_size = 12, mlp_dim= 64, num_time = input_len,  dropout = 0., device= self.device)
 
         self.SpatialBlock = Spatial_block(

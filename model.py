@@ -229,7 +229,7 @@ class Spatial_block(nn.Module):
         self.num_nodes = num_nodes
         self.seq_length = seq_length
         self.d_model = d_model
-        self.attention = SpatialAttention(factor=5, scale=None, attention_dropout=0.1, num_nodes=self.num_nodes)
+        self.attention = Spatial_Attention(factor=5, scale=None, attention_dropout=0.1, num_nodes=self.num_nodes)
         self.LayerNorm = LayerNorm(
             [d_model, num_nodes, seq_length], elementwise_affine=False
         )
@@ -265,9 +265,9 @@ class Spatial_block(nn.Module):
         return x
         
 
-class SpatialAttention(nn.Module):
+class Spatial_Attention(nn.Module):
     def __init__(self, factor=5, scale=None, attention_dropout=0.1, num_nodes=None):
-        super(SpatialAttention, self).__init__()
+        super(Spatial_Attention, self).__init__()
 
         self.factor = factor
         self.scale = scale
